@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ثبت ریکشن</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -86,24 +87,13 @@
             return response.ok;
         }
 
-        function closePage() {
-            setTimeout(function() {
-                window.close();
-            }, 200);
-            setTimeout(function() {
-                if (!window.closed) {
-                    document.body.innerHTML = '<div style="text-align:center;margin-top:50px;font-family:Tahoma;"><div style="font-size:3rem;">✅</div><p style="font-size:1rem;color:#10b981;">می‌تونید صفحه رو ببندید</p></div>';
-                }
-            }, 800);
-        }
-
         async function handleReaction() {
             var params = new URLSearchParams(window.location.search);
             var postId = params.get('post');
             var emoji = params.get('emoji');
             
             if (!postId || !emoji) {
-                document.getElementById('loadingBox').innerHTML = '<div style="color:#ef4444;">⚠️ لینک معتبر نیست</div>';
+                document.getElementById('loadingBox').innerHTML = '<div style="color:#ef4444;">لینک معتبر نیست</div>';
                 return;
             }
 
@@ -120,7 +110,7 @@
                 saveReactionToStorage(postId, emoji);
             }
 
-            closePage();
+            window.close();
         }
 
         handleReaction();
