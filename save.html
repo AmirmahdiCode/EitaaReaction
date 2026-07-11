@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ثبت ریکشن</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Tahoma, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #f0f2f5;
+            color: #333;
+        }
+        .container {
+            text-align: center;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e5e7eb;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem auto;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .text {
+            font-size: 1rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="loadingBox">
+        <div class="spinner"></div>
+        <div class="text">در حال ثبت ریکشن...</div>
+    </div>
+
+    <script>
+        var API_URL = 'https://script.google.com/macros/s/AKfycbwh0JqZAQaKI0UjbAY08US5Ah79FXH0ThVeoIbdSl_jx7Xk3wAbgxLQV2N1xzCFi8XG/exec';
+        var STORAGE_KEY = 'eitaa_reactions';
+
+        function getStoredReactions() {
+            var data = localStorage.getItem(STORAGE_KEY);
+            return data ? JSON.parse(data) : {};
+        }
+
+        function saveReactionToStorage(postId, emoji) {
+            var reactions = getStoredReactions();
+            reactions[postId] = emoji;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(reactions));
+        }
+
+        function removeReactionFromStorage(postId) {
+            var reactions = getStoredReactions();
+            delete reactions[postId];
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(reactions));
+        }
+
+        function getStoredReaction(postId) {
+            var reactions = getStoredReactions();
+            return reactions[postId] || null;
+        }
+
+        async function addReaction(postId, emoji) {
+            var response = await fetch(
+                API_URL + '?action=add&post=' + encodeURIComponent(postId) + '&emoji=' + encodeURIComponent(emoji)
+            );
+            return response.ok;
+        }
+
+        async function removeReaction(postId, emoji) {
+            var response = await fetch(
+                API_URL + '?action=remove&post=' + encodeURIComponent(postId) + '&emoji=' + encodeURIComponent(emoji)
+            );
+            return response.ok;
+        }
+
+        function closePage() {
+            setTimeout(function() {
+                window.close();
+            }, 200);
+            setTimeout(function() {
+                if (!window.closed) {
+                    document.body.innerHTML = '<div style="text-align:center;margin-top:50px;font-family:Tahoma;"><div style="font-size:3rem;">✅</div><p style="font-size:1rem;color:#10b981;">می‌تونید صفحه رو ببندید</p></div>';
+                }
+            }, 800);
+        }
+
+        async function handleReaction() {
+            var params = new URLSearchParams(window.location.search);
+            var postId = params.get('post');
+            var emoji = params.get('emoji');
+            
+            if (!postId || !emoji) {
+                document.getElementById('loadingBox').innerHTML = '<div style="color:#ef4444;">⚠️ لینک معتبر نیست</div>';
+                return;
+            }
+
+            var previousEmoji = getStoredReaction(postId);
+
+            if (previousEmoji === emoji) {
+                await removeReaction(postId, emoji);
+                removeReactionFromStorage(postId);
+            } else {
+                if (previousEmoji) {
+                    await removeReaction(postId, previousEmoji);
+                }
+                await addReaction(postId, emoji);
+                saveReactionToStorage(postId, emoji);
+            }
+
+            closePage();
+        }
+
+        handleReaction();
+    </script>
+</body>
+</html>
