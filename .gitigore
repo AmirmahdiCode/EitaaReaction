@@ -1,0 +1,46 @@
+# فایل‌های اطلاعات حساس
+login.json
+registered_posts.json
+.env
+.env.local
+.env.*.local
+
+# فایل‌های موقت پایتون
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+
+# پوشه‌های مجازی
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# فایل‌های سیستمی
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+*.tmp
+
+# فایل‌های صوتی (اختیاری)
+output.mp3
+*.mp3
+*.wav
+
+# فایل‌های IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
