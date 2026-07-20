@@ -22,6 +22,7 @@ import soundfile as sf
 from pycaw.pycaw import AudioUtilities, ISimpleAudioVolume, IAudioMeterInformation
 import json
 
+
 CoInitialize()
 
 class Bot:
