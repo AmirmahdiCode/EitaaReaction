@@ -1,0 +1,10 @@
+python-dotenv
+requests
+selenium
+colorama
+comtypes
+pillow
+pyperclip
+soundcard
+soundfile
+pycaw
