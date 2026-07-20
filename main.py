@@ -22,8 +22,9 @@ import soundfile as sf
 from pycaw.pycaw import AudioUtilities, ISimpleAudioVolume, IAudioMeterInformation
 import json
 
-
 CoInitialize()
+
+PHONE_NUMBER = "09204209320"
 
 class Bot:
     def __init__(self, headless: bool, autologin: bool, Browser: str = "2"):
@@ -52,7 +53,7 @@ class Bot:
                     except:
                         continue
                     else:
-                        phone = input("What's your "+Fore.GREEN+"phone number"+Fore.WHITE+" for login in Eitaa? +")
+                        phone = PHONE_NUMBER
                         phone_input.send_keys(Keys.CONTROL + 'a')
                         phone_input.send_keys(Keys.BACKSPACE)
                         phone_input.send_keys(str(phone))
