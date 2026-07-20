@@ -24,27 +24,11 @@ EMOJIS = [
 ]
 
 EMOJI_CHARS = {
-    "rofl": "🤣",
-    "heart_eyes": "😍",
-    "neutral": "😐",
-    "cursing": "🤬",
-    "mind_blown": "🤯",
-    "poop": "💩",
-    "heart": "❤️",
-    "broken_heart": "💔",
-    "kiss": "😘",
-    "clap": "👏",
-    "thumbs_up": "👍",
-    "thumbs_down": "👎",
-    "moon": "🌙",
-    "otter": "🦦",
-    "cherry": "🍒",
-    "peach": "🍑",
-    "banana": "🍌",
-    "party": "🎉",
-    "cool": "😎",
-    "iran": "🇮🇷",
-    "fire": "🔥"
+    "rofl": "🤣", "heart_eyes": "😍", "neutral": "😐", "cursing": "🤬",
+    "mind_blown": "🤯", "poop": "💩", "heart": "❤️", "broken_heart": "💔",
+    "kiss": "😘", "clap": "👏", "thumbs_up": "👍", "thumbs_down": "👎",
+    "moon": "🌙", "otter": "🦦", "cherry": "🍒", "peach": "🍑",
+    "banana": "🍌", "party": "🎉", "cool": "😎", "iran": "🇮🇷", "fire": "🔥"
 }
 
 def load_posts():
