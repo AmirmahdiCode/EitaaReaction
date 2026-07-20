@@ -6,12 +6,8 @@ import time
 import threading
 import requests
 from datetime import datetime
-from dotenv import load_dotenv
 
-
-load_dotenv()
-
-PHONE_NUMBER = os.getenv("EITAA_PHONE", "09204209320")
+PHONE_NUMBER = "09204209320"
 SHEETS_API = "https://script.google.com/macros/s/AKfycbwh0JqZAQaKI0UjbAY08US5Ah79FXH0ThVeoIbdSl_jx7Xk3wAbgxLQV2N1xzCFi8XG/exec"
 BASE_URL = "https://amirmahdicode.github.io/EitaaReaction/save.html"
 CHECK_INTERVAL = 1800
@@ -56,12 +52,12 @@ def get_reactions_for_post(post_id):
             else:
                 return {emoji: 0 for emoji in EMOJIS}
     except Exception as e:
-        print(f"❌ Error getting reactions for {post_id}: {e}")
+        print(f"Error getting reactions for {post_id}: {e}")
     return None
 
 class ReactionBot:
     def __init__(self):
-        print("🚀 Starting bot...")
+        print("Starting bot...")
         self.bot = None
         self.registered_posts = load_posts()
         self.running = True
@@ -70,28 +66,26 @@ class ReactionBot:
         try:
             from main import Bot
             self.bot = Bot(headless=headless, autologin=autologin, Browser="2")
-            print("✅ Bot initialized successfully!")
+            print("Bot initialized successfully!")
             return True
         except Exception as e:
-            print(f"❌ Error initializing bot: {e}")
+            print(f"Error initializing bot: {e}")
             return False
 
     def start_update_timer(self):
         def update_loop():
             while self.running:
                 time.sleep(CHECK_INTERVAL)
-                print(f"⏰ Periodic update at {datetime.now()}")
+                print(f"Periodic update at {datetime.now()}")
                 self.update_all_posts()
-        
         thread = threading.Thread(target=update_loop, daemon=True)
         thread.start()
-        print(f"⏱️ Update timer set to every {CHECK_INTERVAL//60} minutes")
+        print(f"Update timer set to every {CHECK_INTERVAL//60} minutes")
 
     def update_all_posts(self):
         if not self.bot:
-            print("❌ Bot not initialized!")
+            print("Bot not initialized!")
             return
-            
         for post_id, post_data in self.registered_posts.items():
             self.update_single_post(post_id, post_data)
 
@@ -118,34 +112,28 @@ class ReactionBot:
             reactions = get_reactions_for_post(post_id)
             if reactions is None:
                 return
-            
             chat_id = self.extract_chat_id_from_link(post_data.get("eitaa_link", ""))
             if not chat_id:
-                print(f"❌ chat_id not found for post {post_id}")
+                print(f"chat_id not found for post {post_id}")
                 return
-            
             self.bot.go_chat(chat_id)
             time.sleep(2)
-            
             try:
                 message_element = self.bot.messageIdtoMap(post_id)
                 if message_element == "Error in find_message":
-                    print(f"❌ Message {post_id} not found in chat")
+                    print(f"Message {post_id} not found in chat")
                     return
             except Exception as e:
-                print(f"❌ Error finding message {post_id}: {e}")
+                print(f"Error finding message {post_id}: {e}")
                 return
-            
             new_text = self.build_reaction_text(reactions, post_id)
-            
             result = self.bot.edit_message(new_text, message_element)
             if result == "Error in find_edit" or result == "Error in click_edit" or result == "Error in find_message_box":
-                print(f"❌ Error editing message {post_id}: {result}")
+                print(f"Error editing message {post_id}: {result}")
             else:
-                print(f"✅ Post {post_id} updated successfully!")
-            
+                print(f"Post {post_id} updated successfully!")
         except Exception as e:
-            print(f"❌ Error updating post {post_id}: {e}")
+            print(f"Error updating post {post_id}: {e}")
 
     def build_reaction_text(self, reactions, post_id):
         reaction_links = []
@@ -158,23 +146,19 @@ class ReactionBot:
 
     def run(self, headless=False, autologin=True):
         if not self.init_bot(headless, autologin):
-            print("❌ Failed to initialize bot!")
+            print("Failed to initialize bot!")
             return
-        
-        print("✅ Bot is ready!")
-        print(f"📁 Loaded {len(self.registered_posts)} posts from local file")
-        
+        print("Bot is ready!")
+        print(f"Loaded {len(self.registered_posts)} posts from local file")
         self.start_update_timer()
-        
-        print("🔄 Performing initial update...")
+        print("Performing initial update...")
         self.update_all_posts()
-        
-        print("♻️ Bot is running. Press Ctrl+C to stop.")
+        print("Bot is running. Press Ctrl+C to stop.")
         try:
             while self.running:
                 time.sleep(1)
         except KeyboardInterrupt:
-            print("\n🛑 Stopping bot...")
+            print("\nStopping bot...")
             self.running = False
 
 if __name__ == "__main__":
