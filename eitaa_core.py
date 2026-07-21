@@ -2,12 +2,14 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 from colorama import Fore
 import requests
-import pyperclip
 import json
 import time
 import os
+import pyperclip
 
 
 class EitaaBot:
@@ -20,19 +22,16 @@ class EitaaBot:
 
         print(Fore.CYAN + "Starting..." + Fore.WHITE)
 
-        if browser == "1":
-            options = webdriver.FirefoxOptions()
-            if headless:
-                options.add_argument('--headless')
-            self.driver = webdriver.Firefox(options=options)
-        else:
-            options = webdriver.ChromeOptions()
-            if headless:
-                options.add_argument('--headless')
-            self.driver = webdriver.Chrome(options=options)
+        options = Options()
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
+        
+        self.driver = webdriver.Chrome(options=options)
+        self.driver.maximize_window()
 
         try:
             self.driver.get("https://web.eitaa.com/")
+            time.sleep(5)
         except:
             print("Error loading Eitaa")
             return
@@ -40,63 +39,26 @@ class EitaaBot:
         if autologin:
             self._auto_login()
         else:
-            self._login()
+            self._manual_login()
 
-    def _login(self):
-        while True:
-            try:
-                phone_input = self.driver.find_element(By.CSS_SELECTOR, "div.input-field:nth-child(2) > div:nth-child(1)")
-            except:
-                continue
-            else:
-                phone = input("Phone number (+98): ")
-                phone_input.send_keys(Keys.CONTROL + 'a')
-                phone_input.send_keys(Keys.BACKSPACE)
-                phone_input.send_keys(str(phone))
-                self.driver.find_element(By.CSS_SELECTOR, "button.btn-primary:nth-child(4)").click()
-                break
-
-        while True:
-            try:
-                code_input = self.driver.find_element(By.CSS_SELECTOR, "input.input-field-input")
-            except:
-                continue
-            else:
-                otp = input("OTP Code: ")
-                code_input.send_keys(str(otp))
-                break
-
-        while True:
-            try:
-                self.driver.find_element(By.CSS_SELECTOR, '#main-search')
-            except:
-                try:
-                    status = self.driver.find_element(By.XPATH, "/html/body/div[1]/div/div[2]/div[3]/div/div[3]/div/label/span")
-                    if status.text == "کد نامعتبر است":
-                        print("Wrong OTP!")
-                        return
-                except:
-                    print("Waiting...", end="\r")
-                    continue
-            else:
-                os.system('cls')
-                time.sleep(15.5)
-                print(Fore.GREEN + "Logged in!" + Fore.WHITE)
-                
-                save = input("Save login? (y/n): ")
-                if save == "y":
-                    data_auth = self.driver.execute_script("""
-                        var items = {};
-                        for (var i = 0; i < localStorage.length; i++) {
-                            var key = localStorage.key(i);
-                            items[key] = localStorage.getItem(key);
-                        }
-                        return items;
-                    """)
-                    with open("login.json", "w") as f:
-                        json.dump(data_auth, f, indent=4)
-                    print("Login saved!")
-                break
+    def _manual_login(self):
+        print("\n" + Fore.YELLOW + "Please login manually in the Chrome window..." + Fore.WHITE)
+        print("After login is complete, come back here and press ENTER.")
+        input("Press ENTER to continue...")
+        
+        save = input("Save login for next time? (y/n): ")
+        if save.lower() == "y":
+            data_auth = self.driver.execute_script("""
+                var items = {};
+                for (var i = 0; i < localStorage.length; i++) {
+                    var key = localStorage.key(i);
+                    items[key] = localStorage.getItem(key);
+                }
+                return items;
+            """)
+            with open("login.json", "w") as f:
+                json.dump(data_auth, f, indent=4)
+            print(Fore.GREEN + "Login saved!" + Fore.WHITE)
 
     def _auto_login(self):
         try:
@@ -109,45 +71,34 @@ class EitaaBot:
                     script += f"localStorage.setItem({escaped_key}, {escaped_value});"
                 self.driver.execute_script(script)
                 self.driver.refresh()
-                os.system('cls')
-                time.sleep(15.5)
+                time.sleep(10)
                 print(Fore.GREEN + "Auto-login successful!" + Fore.WHITE)
         except:
             print(Fore.RED + "Login data not found!" + Fore.WHITE)
-            self._login()
+            self._manual_login()
 
     def go_chat(self, chat_id):
         self.driver.get("https://web.eitaa.com/#" + str(chat_id))
-        time.sleep(3)
-
-    def chat_id(self):
-        try:
-            chat = self.driver.find_element(By.CSS_SELECTOR, "div.user-title > span:nth-child(1)")
-            return str(chat.get_attribute("data-peer-id"))
-        except:
-            return None
+        time.sleep(5)
 
     def edit_message(self, new_text, message_element):
         try:
             action = ActionChains(self.driver)
             action.context_click(on_element=message_element)
             action.perform()
-            time.sleep(1)
+            time.sleep(2)
             
             edit_btn = self.driver.find_element(By.CSS_SELECTOR, 'div.tgico-edit > div:nth-child(1)')
             edit_btn.click()
-            time.sleep(0.5)
+            time.sleep(1)
             
             input_box = self.driver.find_element(By.CSS_SELECTOR, 'div.input-message-input:nth-child(1)')
             input_box.send_keys(Keys.CONTROL + 'a')
             input_box.send_keys(Keys.BACKSPACE)
             
-            new_text = new_text.replace('\n', '\n')
-            lines = new_text.split('\n')
-            for i, line in enumerate(lines):
-                input_box.send_keys(line)
-                if i < len(lines) - 1:
-                    input_box.send_keys(Keys.SHIFT + Keys.ENTER)
+            pyperclip.copy(new_text)
+            input_box.send_keys(Keys.CONTROL + 'v')
+            time.sleep(1)
             
             input_box.send_keys(Keys.ENTER)
             return True
@@ -159,11 +110,9 @@ class EitaaBot:
         try:
             chat = self.driver.find_element(By.CSS_SELECTOR, f"li.chatlist-chat:nth-child({chat_position})")
             chat_id = str(chat.get_attribute('data-peer-id'))
-            cp = chat.find_element(By.CLASS_NAME, "user-caption")
-            sub = cp.find_element(By.CLASS_NAME, "dialog-subtitle")
             
             try:
-                badge = sub.find_element(By.CLASS_NAME, "dialog-subtitle-badge")
+                badge = chat.find_element(By.CLASS_NAME, "dialog-subtitle-badge")
                 unread_count = int(badge.get_attribute('innerHTML'))
             except:
                 return None
@@ -181,12 +130,8 @@ class EitaaBot:
                 message_id = bubble.get_attribute("data-mid")
                 
                 try:
-                    content_wrapper = bubble.find_element(By.CLASS_NAME, "bubble-content-wrapper")
-                    content = content_wrapper.find_element(By.CLASS_NAME, "bubble-content")
-                    message_div = content.find_element(By.CLASS_NAME, "message")
-                    
+                    message_div = bubble.find_element(By.CLASS_NAME, "message")
                     text = message_div.text
-                    time_element = message_div.find_element(By.TAG_NAME, "span")
                     
                     result[str(i)] = {
                         'message_id': str(message_id),
@@ -211,22 +156,20 @@ class EitaaBot:
         except:
             return "unknown"
 
-    def _get_link(self, message_element):
+    def get_message_link(self, message_element):
         try:
             action = ActionChains(self.driver)
             action.context_click(on_element=message_element)
             action.perform()
-            time.sleep(1)
+            time.sleep(2)
             
             link_btn = self.driver.find_element(By.CSS_SELECTOR, "div.tgico-link:nth-child(12)")
             link_btn.click()
-            time.sleep(0.2)
-            return str(pyperclip.paste())
+            time.sleep(0.5)
+            
+            return pyperclip.paste()
         except:
             return ""
-
-    def get_message_link(self, message_element):
-        return self._get_link(message_element)
 
     def close(self):
         try:
